@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Purohith Connect Super Admin
 
-## Getting Started
+Next.js 16 operations and publishing console for the Purohith Connect marketplace.
 
-First, run the development server:
+## Capabilities
+
+- Supabase Auth with server-side cookies and database-backed role checks
+- DAU, WAU, MAU, session, demand, and feature-adoption reporting
+- Puja catalog management shared by customers and priests
+- Priest verification and rejection workflow with audit records
+- Programmatic SEO, GEO, AEO, and LLM discovery publishing
+- Keyword clusters, revision history, FAQ schema, and search performance
+- Responsive desktop, tablet, and mobile administration UI
+
+## Configure
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the publishable key for project
+`fvvmfrbfqwdypkagtdce`. Never put a service-role key in this application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Apply the repository migrations from the repository root:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx supabase link --project-ref fvvmfrbfqwdypkagtdce
+npx supabase db push
+```
 
-## Learn More
+Create the first user in Supabase Auth, then promote that existing user from the
+Supabase SQL editor. Replace the email before running:
 
-To learn more about Next.js, take a look at the following resources:
+```sql
+update public.app_users
+set role = 'super_admin', is_active = true, updated_at = now()
+where id = (select id from auth.users where email = 'owner@example.com');
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The profile row must already exist. Creating production passwords in source code
+is intentionally unsupported.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Run
 
-## Deploy on Vercel
+```bash
+npm install
+npm run dev -- --port 3006
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open `http://localhost:3006`. Production verification:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm run build
+```
+
+## Security model
+
+The browser receives only the publishable Supabase key. All authorization is
+enforced with RLS and `private.current_app_role()`. The console verifies the Auth
+user on the server and reads the canonical role from `public.app_users`. Content
+mutations write to `admin_actions`, and page updates preserve the prior version
+in `content_revisions`.

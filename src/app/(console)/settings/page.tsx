@@ -1,0 +1,8 @@
+import { CheckCircle2, Database, Globe2, KeyRound } from "lucide-react";
+import { PageHeading } from "@/components/page-heading";
+
+export default function SettingsPage() {
+  const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "Not configured";
+  return <><PageHeading eyebrow="Platform configuration" title="Environment and integrations" description="A read-only production readiness view. Secrets remain in deployment environment variables."/><section className="settings-grid"><article className="panel setting-card"><Database/><div><h2>Supabase project</h2><p>{projectUrl}</p><span className="healthy"><CheckCircle2 size={15}/>Expected project: fvvmfrbfqwdypkagtdce</span></div></article><article className="panel setting-card"><KeyRound/><div><h2>Authentication</h2><p>Cookie-based SSR sessions with database role verification.</p><span className="healthy"><CheckCircle2 size={15}/>RLS enforced</span></div></article><article className="panel setting-card"><Globe2/><div><h2>Public publishing</h2><p>Only `published` programmatic pages are readable anonymously.</p><span className="healthy"><CheckCircle2 size={15}/>Draft isolation enabled</span></div></article></section><section className="panel deployment-checklist"><h2>Production checklist</h2>{["Set the Supabase publishable key in Vercel", "Apply all migrations to the dedicated project", "Create the first Auth user and promote its app_users role to super_admin", "Configure the public site URL and auth redirect allowlist", "Connect Search Console ingestion to content_performance_daily"].map((item, index) => <div key={item}><span>{index + 1}</span><p>{item}</p></div>)}</section></>;
+}
+
