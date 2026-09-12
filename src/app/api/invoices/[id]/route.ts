@@ -7,7 +7,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { id } = await params;
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("payment_submissions")
+    .from("payment_reports")
     .select("invoice_number,invoice_html")
     .eq("id", id)
     .single();
@@ -16,6 +16,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     headers: {
       "content-type": "text/html; charset=utf-8",
       "content-disposition": `attachment; filename=\"${data.invoice_number || "purohith-connect-invoice"}.html\"`,
+      "cache-control": "private, no-store",
     },
   });
 }

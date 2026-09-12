@@ -15,6 +15,18 @@ export type FeatureMetric = {
   last_used_at: string;
 };
 
+export type ChartDatum = { label: string; value: number; secondary?: number };
+
+export type AnalyticsModule = {
+  title: string;
+  description: string;
+  type: "bar" | "line" | "area" | "donut" | "radial" | "radar" | "scatter" | "funnel" | "composed" | "treemap";
+  data: ChartDatum[];
+  valueLabel?: string;
+};
+
+export type HeatmapCell = { day: string; hour: number; value: number };
+
 export type Pooja = {
   id: string;
   slug: string;
@@ -40,4 +52,3 @@ export type ProgrammaticPage = {
   clicks_30d?: number;
   conversions_30d?: number;
 };
-
