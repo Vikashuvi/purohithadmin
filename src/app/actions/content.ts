@@ -172,6 +172,16 @@ export async function savePriestListing(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.from("priest_profiles").update(payload).eq("id", id);
   if (error) redirect(`/priests?error=${encodeURIComponent(error.message)}`);
+  if (payload.pooja_slugs.length) {
+    const services = payload.pooja_slugs.map((slug) => ({
+      priest_id: id,
+      pooja_slug: slug,
+      price_paise: Math.max(startingPrice, 1) * 100,
+      is_active: true,
+      updated_at: new Date().toISOString(),
+    }));
+    await supabase.from("priest_services").upsert(services, { onConflict: "priest_id,pooja_slug" });
+  }
   await audit(actor.id, "update_marketplace_listing", "priest_profile", id, payload.display_name);
   revalidatePath("/priests");
   revalidatePath("/seo/locations");
