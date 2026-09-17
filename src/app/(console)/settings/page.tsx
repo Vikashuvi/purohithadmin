@@ -52,7 +52,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             />
           </label>
           <p style={{ margin: 0, color: "var(--muted)", fontSize: "11px", lineHeight: 1.5 }}>
-            This fee is dynamically applied to Cashfree customer checkouts and provider settlement earnings. Changing this rate immediately updates all future bookings without redeploying code.
+            This fee is dynamically deducted from purohit earnings upon booking settlement. Customers pay the ceremony price (e.g. ₹1,000), and the purohit receives the net amount after this fee (e.g. ₹900 at 10%). Changing this rate immediately applies to all future bookings.
           </p>
           <div>
             <button className="primary-button" type="submit">
