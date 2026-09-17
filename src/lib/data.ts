@@ -205,3 +205,16 @@ export async function getCashfreePaymentData() {
     locations: locations.data || [],
   };
 }
+
+export async function getPlatformSettings() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("platform_settings").select("*");
+  const settingsMap: Record<string, string> = {};
+  for (const item of data || []) {
+    settingsMap[item.key] = item.value;
+  }
+  return {
+    settings: data || [],
+    serviceFeePercent: Number(settingsMap["payment_service_fee_percent"] || 10),
+  };
+}

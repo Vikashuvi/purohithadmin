@@ -2,14 +2,14 @@ import { AlertTriangle, BadgeIndianRupee, CheckCircle2, Clock3, LocateFixed, Rec
 import { approveProviderRelease } from "@/app/actions/content";
 import { PageHeading } from "@/components/page-heading";
 import { StatusPill } from "@/components/status-pill";
-import { getCashfreePaymentData } from "@/lib/data";
+import { getCashfreePaymentData, getPlatformSettings } from "@/lib/data";
 
 const relation = <T,>(value: T | T[] | null | undefined) => Array.isArray(value) ? value[0] : value;
 const money = (paise: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(Number(paise || 0) / 100);
 const date = (value?: string | null) => value ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "Not set";
 
 export default async function PaymentsPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const [data, query] = await Promise.all([getCashfreePaymentData(), searchParams]);
+  const [data, query, { serviceFeePercent }] = await Promise.all([getCashfreePaymentData(), searchParams, getPlatformSettings()]);
   const paid = data.orders.filter((order) => order.status === "paid");
   const held = data.earnings.filter((earning) => ["held", "available", "release_pending"].includes(earning.status));
 
@@ -65,7 +65,10 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
     </div>
 
     <div className="table-panel">
-      <div className="table-toolbar"><strong>Provider settlement ledger</strong><span>Funds remain held until the booking is completed.</span></div>
+      <div className="table-toolbar">
+        <strong>Provider settlement ledger (Active fee: {serviceFeePercent}%)</strong>
+        <span>Funds remain held until the booking is completed. <a href="/settings" className="text-link">Manage fee rate</a></span>
+      </div>
       <div className="data-table">
         <div className="table-row payments-table table-head"><span>Provider</span><span>Gross</span><span>Platform fee</span><span>Net</span><span>Release</span></div>
         {data.earnings.map((earning) => {
