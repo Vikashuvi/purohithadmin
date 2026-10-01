@@ -1,10 +1,13 @@
-import { CheckCircle2, Database, Globe2, KeyRound, Percent, Save } from "lucide-react";
+import { CheckCircle2, Database, Globe2, KeyRound, Save } from "lucide-react";
 import { updateServiceFee } from "@/app/actions/settings";
+import { AppearanceEditor } from "./appearance-editor";
 import { PageHeading } from "@/components/page-heading";
+import { normalizeAppearance } from "@/lib/appearance";
 import { getPlatformSettings } from "@/lib/data";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ success?: string; error?: string }> }) {
-  const [query, { serviceFeePercent }] = await Promise.all([searchParams, getPlatformSettings()]);
+  const [query, { serviceFeePercent, appearance }] = await Promise.all([searchParams, getPlatformSettings()]);
+  const customerAppearance = normalizeAppearance(appearance);
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "Not configured";
 
   return (
@@ -12,7 +15,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <PageHeading
         eyebrow="Platform configuration"
         title="Environment and settings"
-        description="Manage dynamic platform fees, commissions, and read-only production integration statuses."
+        description="Manage the customer app theme, platform fees, and production integration status. Puja photos are changed in the Puja catalog."
       />
 
       {query.success && <div className="notice success">{decodeURIComponent(query.success)}</div>}
@@ -60,6 +63,19 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </button>
           </div>
         </form>
+      </section>
+
+      <section className="panel" style={{ marginBottom: "22px" }}>
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow" style={{ color: "var(--orange)", fontWeight: 700, margin: 0, fontSize: "11px" }}>Customer app</p>
+            <h2>Theme and button style</h2>
+          </div>
+        </div>
+        <p style={{ margin: "0 0 16px", color: "var(--muted)", fontSize: "12px", lineHeight: 1.5, maxWidth: "680px" }}>
+          This is the default look for the home screen, ceremony chips, and buttons. A customer can still pick their own theme on the device. Puja card photos come from each product image in the Puja catalog.
+        </p>
+        <AppearanceEditor initial={customerAppearance} />
       </section>
 
       <section className="settings-grid">

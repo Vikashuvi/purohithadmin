@@ -209,12 +209,19 @@ export async function getCashfreePaymentData() {
 export async function getPlatformSettings() {
   const supabase = await createClient();
   const { data } = await supabase.from("platform_settings").select("*");
-  const settingsMap: Record<string, string> = {};
+  const settingsMap: Record<string, unknown> = {};
   for (const item of data || []) {
     settingsMap[item.key] = item.value;
+  }
+  const storedAppearance = settingsMap.customer_appearance;
+  let appearance = null;
+  if (storedAppearance && typeof storedAppearance === "object") appearance = storedAppearance;
+  else if (typeof storedAppearance === "string") {
+    try { appearance = JSON.parse(storedAppearance); } catch { appearance = null; }
   }
   return {
     settings: data || [],
     serviceFeePercent: Number(settingsMap["payment_service_fee_percent"] || 10),
+    appearance,
   };
 }

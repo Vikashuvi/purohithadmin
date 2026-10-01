@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
+import { normalizeAppearance } from "@/lib/appearance";
 import { createClient } from "@/lib/supabase/server";
 
 export async function updateServiceFee(formData: FormData) {
@@ -40,4 +41,36 @@ export async function updateServiceFee(formData: FormData) {
   revalidatePath("/settings");
   revalidatePath("/payments");
   redirect("/settings?success=Service+charge+updated+successfully");
+}
+
+export async function saveCustomerAppearance(formData: FormData) {
+  const actor = await requireAdmin();
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(String(formData.get("appearance") || ""));
+  } catch {
+    redirect("/settings?error=Theme+could+not+be+read");
+  }
+  const appearance = normalizeAppearance(parsed);
+  const supabase = await createClient();
+  const { error } = await supabase.from("platform_settings").upsert({
+    key: "customer_appearance",
+    value: JSON.stringify(appearance),
+    description: "Customer app palette, button shape, and button style",
+    updated_by: actor.id,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "key" });
+
+  if (error) redirect(`/settings?error=${encodeURIComponent(error.message || "Failed to publish theme")}`);
+
+  await supabase.from("admin_actions").insert({
+    actor_id: actor.id,
+    action: "update_setting",
+    target_type: "platform_settings",
+    target_id: "customer_appearance",
+    note: `Published ${appearance.preset} theme with ${appearance.buttonShape} ${appearance.buttonStyle} buttons`,
+  });
+
+  revalidatePath("/settings");
+  redirect("/settings?success=Customer+theme+published");
 }
