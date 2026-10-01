@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Save } from "lucide-react";
-import { saveCustomerAppearance } from "@/app/actions/settings";
+import { saveAdminAppearance } from "@/app/actions/settings";
 import { APPEARANCE_PRESETS, BUTTON_SHAPES, BUTTON_STYLES, COLOR_SWATCHES, buttonTokens, type CustomerAppearance } from "@/lib/appearance";
 
 export function AppearanceEditor({ initial }: { initial: CustomerAppearance }) {
@@ -16,7 +16,7 @@ export function AppearanceEditor({ initial }: { initial: CustomerAppearance }) {
   }
 
   return (
-    <form action={saveCustomerAppearance} className="appearance-layout">
+    <form action={saveAdminAppearance} className="appearance-layout">
       <input type="hidden" name="appearance" value={JSON.stringify(appearance)} />
       <div className="appearance-controls">
         <div>
@@ -78,26 +78,22 @@ export function AppearanceEditor({ initial }: { initial: CustomerAppearance }) {
           </div>
         </div>
         <div>
-          <button className="primary-button" type="submit"><Save size={15} /> Publish customer theme</button>
+          <button className="primary-button" type="submit"><Save size={15} /> Apply to this console</button>
         </div>
       </div>
-      <aside className="appearance-phone" aria-label="Customer home preview">
+      <aside className="appearance-phone" aria-label="Console theme preview">
+        <p className="appearance-label">Console preview</p>
         <div className="appearance-card">
           <div className="appearance-photo" style={{ background: tokens.softBg }} />
           <div>
-            <p style={{ color: tokens.accent }}>CEREMONY</p>
-            <strong>Ayudha Puja</strong>
-            <span>Starting from ₹1,800</span>
+            <p style={{ color: tokens.accent }}>CONFIGURATION</p>
+            <strong style={{ color: tokens.primary }}>Your console</strong>
+            <span>Buttons, links, and highlights</span>
           </div>
         </div>
         <div className="appearance-actions">
-          <span style={{ borderRadius: tokens.radius }}>View Purohits</span>
-          <b style={{ borderRadius: tokens.radius, background: tokens.primaryBg, color: tokens.primaryFg, borderColor: tokens.primaryBorder }}>Get Proposals</b>
-        </div>
-        <div className="appearance-chips">
-          <b style={{ borderRadius: tokens.radius, background: tokens.primaryBg, color: tokens.primaryFg, borderColor: tokens.primaryBorder }}>All</b>
-          <span style={{ borderRadius: tokens.radius }}>Home</span>
-          <span style={{ borderRadius: tokens.radius }}>Festival</span>
+          <span style={{ borderRadius: tokens.radius }}>Secondary</span>
+          <b style={{ borderRadius: tokens.radius, background: tokens.primaryBg, color: tokens.primaryFg, borderColor: tokens.primaryBorder }}>Primary</b>
         </div>
       </aside>
     </form>

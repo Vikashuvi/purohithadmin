@@ -43,7 +43,7 @@ export async function updateServiceFee(formData: FormData) {
   redirect("/settings?success=Service+charge+updated+successfully");
 }
 
-export async function saveCustomerAppearance(formData: FormData) {
+export async function saveAdminAppearance(formData: FormData) {
   const actor = await requireAdmin();
   let parsed: unknown;
   try {
@@ -53,24 +53,25 @@ export async function saveCustomerAppearance(formData: FormData) {
   }
   const appearance = normalizeAppearance(parsed);
   const supabase = await createClient();
+  const key = `admin_console_theme:${actor.id}`;
   const { error } = await supabase.from("platform_settings").upsert({
-    key: "customer_appearance",
+    key,
     value: JSON.stringify(appearance),
-    description: "Customer app palette, button shape, and button style",
+    description: "Personal admin console palette, button shape, and button style",
     updated_by: actor.id,
     updated_at: new Date().toISOString(),
   }, { onConflict: "key" });
 
-  if (error) redirect(`/settings?error=${encodeURIComponent(error.message || "Failed to publish theme")}`);
+  if (error) redirect(`/settings?error=${encodeURIComponent(error.message || "Failed to apply theme")}`);
 
   await supabase.from("admin_actions").insert({
     actor_id: actor.id,
     action: "update_setting",
     target_type: "platform_settings",
-    target_id: "customer_appearance",
-    note: `Published ${appearance.preset} theme with ${appearance.buttonShape} ${appearance.buttonStyle} buttons`,
+    target_id: key,
+    note: `Applied ${appearance.preset} theme to this admin console`,
   });
 
-  revalidatePath("/settings");
-  redirect("/settings?success=Customer+theme+published");
+  revalidatePath("/", "layout");
+  redirect("/settings?success=Console+theme+applied");
 }

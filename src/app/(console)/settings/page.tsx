@@ -2,12 +2,14 @@ import { CheckCircle2, Database, Globe2, KeyRound, Save } from "lucide-react";
 import { updateServiceFee } from "@/app/actions/settings";
 import { AppearanceEditor } from "./appearance-editor";
 import { PageHeading } from "@/components/page-heading";
-import { normalizeAppearance } from "@/lib/appearance";
-import { getPlatformSettings } from "@/lib/data";
+import { requireAdmin } from "@/lib/auth";
+import { DEFAULT_APPEARANCE } from "@/lib/appearance";
+import { getAdminConsoleTheme, getPlatformSettings } from "@/lib/data";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ success?: string; error?: string }> }) {
-  const [query, { serviceFeePercent, appearance }] = await Promise.all([searchParams, getPlatformSettings()]);
-  const customerAppearance = normalizeAppearance(appearance);
+  const admin = await requireAdmin();
+  const [query, { serviceFeePercent }, savedTheme] = await Promise.all([searchParams, getPlatformSettings(), getAdminConsoleTheme(admin.id)]);
+  const consoleAppearance = savedTheme || DEFAULT_APPEARANCE;
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "Not configured";
 
   return (
@@ -15,7 +17,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <PageHeading
         eyebrow="Platform configuration"
         title="Environment and settings"
-        description="Manage the customer app theme, platform fees, and production integration status. Puja photos are changed in the Puja catalog."
+        description="Set the look of this console for your account, manage platform fees, and review production integration status. Customer app themes stay on each phone."
       />
 
       {query.success && <div className="notice success">{decodeURIComponent(query.success)}</div>}
@@ -68,14 +70,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <section className="panel" style={{ marginBottom: "22px" }}>
         <div className="panel-heading">
           <div>
-            <p className="eyebrow" style={{ color: "var(--orange)", fontWeight: 700, margin: 0, fontSize: "11px" }}>Customer app</p>
-            <h2>Theme and button style</h2>
+            <p className="eyebrow" style={{ color: "var(--orange)", fontWeight: 700, margin: 0, fontSize: "11px" }}>This console</p>
+            <h2>Your theme and button style</h2>
           </div>
         </div>
         <p style={{ margin: "0 0 16px", color: "var(--muted)", fontSize: "12px", lineHeight: 1.5, maxWidth: "680px" }}>
-          This is the default look for the home screen, ceremony chips, and buttons. A customer can still pick their own theme on the device. Puja card photos come from each product image in the Puja catalog.
+          This changes the colors and buttons in the admin web app for your account. It does not change the customer or purohit apps. Those themes are chosen on each phone.
         </p>
-        <AppearanceEditor initial={customerAppearance} />
+        <AppearanceEditor initial={consoleAppearance} />
       </section>
 
       <section className="settings-grid">

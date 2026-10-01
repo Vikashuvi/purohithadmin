@@ -1,3 +1,4 @@
+import { normalizeAppearance } from "@/lib/appearance";
 import { createClient } from "@/lib/supabase/server";
 import type { AnalyticsModule, DailyMetric, FeatureMetric, HeatmapCell, Pooja, ProgrammaticPage } from "./types";
 
@@ -213,15 +214,20 @@ export async function getPlatformSettings() {
   for (const item of data || []) {
     settingsMap[item.key] = item.value;
   }
-  const storedAppearance = settingsMap.customer_appearance;
-  let appearance = null;
-  if (storedAppearance && typeof storedAppearance === "object") appearance = storedAppearance;
-  else if (typeof storedAppearance === "string") {
-    try { appearance = JSON.parse(storedAppearance); } catch { appearance = null; }
-  }
   return {
     settings: data || [],
     serviceFeePercent: Number(settingsMap["payment_service_fee_percent"] || 10),
-    appearance,
   };
+}
+
+export async function getAdminConsoleTheme(adminId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase.from("platform_settings").select("value").eq("key", `admin_console_theme:${adminId}`).maybeSingle();
+  if (!data?.value) return null;
+  try {
+    const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
+    return normalizeAppearance(parsed);
+  } catch {
+    return null;
+  }
 }

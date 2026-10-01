@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export const COLOR_SWATCHES = [
   { id: "maroon", label: "Maroon", hex: "#8F1028" },
   { id: "crimson", label: "Crimson", hex: "#B42318" },
@@ -70,6 +72,30 @@ export function tint(hex: string, amount = 0.14) {
   const mix = (channel: string) => Math.round(parseInt(channel, 16) * amount + 255 * (1 - amount));
   const pair = (value: string) => mix(value).toString(16).padStart(2, "0");
   return `#${pair(raw.slice(0, 2))}${pair(raw.slice(2, 4))}${pair(raw.slice(4, 6))}`.toUpperCase();
+}
+
+export function darken(hex: string, amount = 0.18) {
+  const raw = hex.replace("#", "");
+  if (raw.length !== 6) return "#111111";
+  const mix = (channel: string) => Math.round(parseInt(channel, 16) * (1 - amount));
+  const pair = (value: string) => mix(value).toString(16).padStart(2, "0");
+  return `#${pair(raw.slice(0, 2))}${pair(raw.slice(2, 4))}${pair(raw.slice(4, 6))}`.toUpperCase();
+}
+
+export function consoleThemeStyle(input: unknown) {
+  const tokens = buttonTokens(input);
+  const radius = tokens.buttonShape === "pill" ? "999px" : `${tokens.radius}px`;
+  return {
+    "--brown": tokens.primary,
+    "--brown-soft": tokens.softBg,
+    "--orange": tokens.accent,
+    "--orange-dark": darken(tokens.accent),
+    "--button-radius": radius,
+    "--button-bg": tokens.primaryBg,
+    "--button-fg": tokens.primaryFg,
+    "--button-border": tokens.primaryBorder,
+    "--button-shadow": tokens.buttonStyle === "solid" ? darken(tokens.primary) : "transparent",
+  } as CSSProperties;
 }
 
 export function normalizeAppearance(input: unknown): CustomerAppearance {
