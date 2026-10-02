@@ -29,7 +29,7 @@ export default async function AreaLocationPage({ params }: { params: Promise<{ s
   const { priests } = await getPeopleData();
   const listed = priests.filter((priest) =>
     priest.verification_status === "verified"
-    && (priest.service_areas || []).some((item) => item.toLowerCase() === area.name.toLowerCase()),
+    && (priest.service_areas || []).some((item: string) => item.toLowerCase() === area.name.toLowerCase()),
   );
   const nearby = BANGALORE_AREAS.filter((item) => item.zone === area.zone && item.slug !== area.slug).slice(0, 8);
 
