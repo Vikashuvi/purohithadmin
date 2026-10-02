@@ -76,6 +76,7 @@ export async function savePooja(formData: FormData) {
   await audit(actor.id, id ? "update" : "create", "pooja", id || data?.id || payload.slug, payload.name);
   revalidatePath("/content/poojas");
   revalidatePath("/");
+  redirect(`/content/poojas?success=${encodeURIComponent(id ? `${payload.name} saved` : `${payload.name} created`)}`);
 }
 
 export async function bulkImportPoojas(formData: FormData) {
