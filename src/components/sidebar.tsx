@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BarChart3, BookOpenText, CalendarDays, CreditCard, FileText, Gauge, Languages, MapPinned, MonitorSmartphone, PanelLeftClose, PanelLeftOpen, Search, Settings, ShieldCheck, UsersRound } from "lucide-react";
+import { BarChart3, BookOpenText, CalendarDays, CreditCard, FileText, Gauge, GalleryHorizontal, Languages, MapPinned, MonitorSmartphone, PanelLeftClose, PanelLeftOpen, Search, Settings, ShieldCheck, UsersRound } from "lucide-react";
 
 const sections = [
   { label: "Operate", items: [
@@ -18,6 +18,7 @@ const sections = [
   { label: "Publish", items: [
     { href: "/content/poojas", label: "Puja catalog", icon: CalendarDays },
     { href: "/content/pages", label: "Content", icon: FileText },
+    { href: "/content/banners", label: "Welcome banner", icon: GalleryHorizontal },
     { href: "/seo", label: "Search growth", icon: Search },
     { href: "/seo/locations", label: "Location pages", icon: MapPinned },
     { href: "/settings", label: "Configuration", icon: Settings },
