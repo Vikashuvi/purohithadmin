@@ -459,7 +459,7 @@ export async function onboardPriest(formData: FormData) {
     portfolio_urls: text(formData, "portfolio_urls").split("\n").map((item) => item.trim()).filter(Boolean),
     starting_price_inr: startingPrice,
     max_price_inr: maximumPrice,
-    verification_status: text(formData, "verification_status") || "pending",
+    verification_status: text(formData, "verification_status") || "verified",
   };
   if ((payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) || payload.full_name.length < 2) redirect("/priests?error=Enter+a+valid+name+and+optional+email");
   if (!/^[a-z0-9._-]{3,32}$/.test(payload.login_username)) redirect("/priests?error=Username+must+be+3-32+lowercase+letters%2C+numbers%2C+dots%2C+underscores%2C+or+hyphens");

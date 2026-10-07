@@ -50,7 +50,7 @@ export default async function PriestsPage({ searchParams }: { searchParams: Prom
         <div className="form-grid">
           <PriestPhotoUpload/>
           <PriestGalleryUpload/>
-          <label>Initial status<select name="verification_status" defaultValue="pending"><option value="pending">Pending review</option><option value="verified">Verified (public with photo)</option></select></label>
+          <label>Initial status<select name="verification_status" defaultValue="verified"><option value="verified">Verified — visible on the customer list</option><option value="pending">Pending review — hidden from customers</option></select></label>
         </div>
         <div className="onboard-summary"><Check size={17}/><span><strong>One-step managed onboarding</strong><small>Creates Supabase login credentials, writes the public profile, stores the gallery, adds service prices, and records the admin action.</small></span></div>
         <div className="form-actions"><button className="primary-button"><UserRoundPlus size={16}/>Create Purohit account</button></div>
