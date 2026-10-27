@@ -334,6 +334,56 @@ export async function savePriestListing(formData: FormData) {
   revalidatePath("/");
 }
 
+export async function resetPriestPassword(_previous: { ok: boolean; error: string; nonce: string }, formData: FormData): Promise<{ ok: boolean; error: string; nonce: string }> {
+  await requireSuperAdmin();
+  const profileId = text(formData, "priest_profile_id");
+  const password = String(formData.get("password") || "");
+  const nonce = text(formData, "nonce");
+  if (!/^[0-9a-f-]{36}$/i.test(profileId) || password.length < 12 || password.length > 72) {
+    return { ok: false, error: "Choose a priest and a password of 12–72 characters.", nonce };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.functions.invoke("admin-user-management", {
+    body: { action: "reset_priest_password", priest_profile_id: profileId, password },
+  });
+  if (error) {
+    const response = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
+    return { ok: false, error: String(response?.error || error.message), nonce };
+  }
+  if (!data?.ok) return { ok: false, error: String(data?.error || "The password was not changed."), nonce };
+  return { ok: true, error: "", nonce };
+}
+
+export async function resetAccountPassword(_previous: { ok: boolean; error: string; nonce: string }, formData: FormData): Promise<{ ok: boolean; error: string; nonce: string }> {
+  await requireSuperAdmin();
+  const userId = text(formData, "user_id");
+  const password = String(formData.get("password") || "");
+  const nonce = text(formData, "nonce");
+  if (!/^[0-9a-f-]{36}$/i.test(userId) || password.length < 12 || password.length > 72) return { ok: false, error: "Choose an account and password of 12–72 characters.", nonce };
+  const supabase = await createClient();
+  const { data, error } = await supabase.functions.invoke("admin-user-management", { body: { action: "reset_user_password", user_id: userId, password } });
+  if (error) {
+    const response = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
+    return { ok: false, error: String(response?.error || error.message), nonce };
+  }
+  return { ok: Boolean(data?.ok), error: data?.ok ? "" : String(data?.error || "The password was not changed."), nonce };
+}
+
+export async function deleteAccount(formData: FormData) {
+  await requireSuperAdmin();
+  const userId = text(formData, "user_id");
+  if (!/^[0-9a-f-]{36}$/i.test(userId) || text(formData, "confirm") !== "DELETE") redirect("/users?error=Type+DELETE+to+confirm");
+  const supabase = await createClient();
+  const { data, error } = await supabase.functions.invoke("admin-user-management", { body: { action: "delete_user", user_id: userId, confirm: "DELETE" } });
+  if (error) {
+    const response = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
+    redirect(`/users?error=${encodeURIComponent(String(response?.error || error.message))}`);
+  }
+  if (!data?.ok) redirect(`/users?error=${encodeURIComponent(String(data?.error || "Account was not deleted"))}`);
+  revalidatePath("/users");
+  redirect("/users?success=Account+deleted");
+}
+
 export async function savePriestPhoto(priestId: string, photoUrl: string): Promise<{ error?: string }> {
   const actor = await requireSuperAdmin();
   const prefix = `${getSupabaseConfig().url}/storage/v1/object/public/priest-images/`;

@@ -8,7 +8,6 @@ export function Toast({ message }: { message?: string }) {
 
   useEffect(() => {
     if (!message) return;
-    setText(message);
     const url = new URL(window.location.href);
     url.searchParams.delete("success");
     const next = `${url.pathname}${url.search}${url.hash}`;

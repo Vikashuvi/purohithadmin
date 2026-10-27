@@ -39,7 +39,7 @@ const makeModule = (title: string, description: string, type: AnalyticsModule["t
 
 export async function getDashboardData() {
   const supabase = await createClient();
-  const [active, daily, features, users, priests, requests, pages] = await Promise.all([
+  const [active, daily, features, users, priests, requests, pages, pending, upcoming, ongoing, completed, cancelled] = await Promise.all([
     supabase.from("super_admin_active_user_metrics").select("*").maybeSingle(),
     supabase.from("super_admin_daily_metrics").select("*").order("day", { ascending: true }).limit(30),
     supabase.from("super_admin_feature_usage_30d").select("*").order("total_events", { ascending: false }).limit(8),
@@ -47,6 +47,11 @@ export async function getDashboardData() {
     supabase.from("priest_profiles").select("id", { count: "exact", head: true }).eq("verification_status", "verified"),
     supabase.from("ceremony_requests").select("id", { count: "exact", head: true }).eq("status", "open"),
     supabase.from("programmatic_pages").select("id", { count: "exact", head: true }).eq("status", "published"),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).in("status", ["accepted", "confirmed"]).gte("booking_date", new Date().toISOString().slice(0, 10)),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "completed"),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).in("status", ["cancelled", "rejected"]),
   ]);
 
   return {
@@ -58,6 +63,11 @@ export async function getDashboardData() {
       priests: priests.count || 0,
       openRequests: requests.count || 0,
       publishedPages: pages.count || 0,
+      pendingBookings: pending.count || 0,
+      upcomingBookings: upcoming.count || 0,
+      ongoingBookings: ongoing.count || 0,
+      completedBookings: completed.count || 0,
+      cancelledBookings: cancelled.count || 0,
     },
   };
 }
@@ -66,6 +76,15 @@ export async function getPoojas() {
   const supabase = await createClient();
   const { data } = await supabase.from("poojas").select("*").order("updated_at", { ascending: false });
   return (data || []) as Pooja[];
+}
+
+export async function getProposalQueue() {
+  const supabase = await createClient();
+  const [requests, proposals] = await Promise.all([
+    supabase.from("ceremony_requests").select("id,customer_id,pooja_slug,ceremony_date,ceremony_time,address,status,payment_status,created_at").order("created_at", { ascending: false }).limit(100),
+    supabase.from("ceremony_proposals").select("id,request_id,priest_id,amount_inr,status,includes_samagri,created_at,priest_profiles(display_name)").order("created_at", { ascending: false }).limit(500),
+  ]);
+  return { requests: requests.data || [], proposals: proposals.data || [], error: requests.error?.message || proposals.error?.message || "" };
 }
 
 export async function getPages() {
@@ -216,7 +235,8 @@ export async function getPlatformSettings() {
   }
   return {
     settings: data || [],
-    serviceFeePercent: Number(settingsMap["payment_service_fee_percent"] || 10),
+    serviceFeePercent: Number(settingsMap["payment_service_fee_percent"]) === 5 ? 5 : 10,
+    biddingEnabled: settingsMap["booking_bidding_enabled"] === "true",
   };
 }
 

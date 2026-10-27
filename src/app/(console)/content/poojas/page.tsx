@@ -19,7 +19,7 @@ export default async function PoojasPage({ searchParams }: { searchParams: Promi
       <PoojaImportReview />
     </details>
     {query.error && <div className="notice error">{decodeURIComponent(query.error)}</div>}
-    <Toast message={query.success ? decodeURIComponent(query.success) : undefined} />
+    <Toast key={query.success || "empty"} message={query.success ? decodeURIComponent(query.success) : undefined} />
     <section className="catalog-list">
       {poojas.map((pooja) => <PoojaCatalogRow key={pooja.id} pooja={pooja} />)}
     </section>

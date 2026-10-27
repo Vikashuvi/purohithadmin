@@ -1,5 +1,5 @@
 import { CheckCircle2, Database, Globe2, KeyRound, Save } from "lucide-react";
-import { updateServiceFee } from "@/app/actions/settings";
+import { updateBiddingMode, updateServiceFee } from "@/app/actions/settings";
 import { AppearanceEditor } from "./appearance-editor";
 import { PageHeading } from "@/components/page-heading";
 import { requireAdmin } from "@/lib/auth";
@@ -8,7 +8,7 @@ import { getAdminConsoleTheme, getPlatformSettings } from "@/lib/data";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ success?: string; error?: string }> }) {
   const admin = await requireAdmin();
-  const [query, { serviceFeePercent }, savedTheme] = await Promise.all([searchParams, getPlatformSettings(), getAdminConsoleTheme(admin.id)]);
+  const [query, { serviceFeePercent, biddingEnabled }, savedTheme] = await Promise.all([searchParams, getPlatformSettings(), getAdminConsoleTheme(admin.id)]);
   const consoleAppearance = savedTheme || DEFAULT_APPEARANCE;
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "Not configured";
 
@@ -37,14 +37,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <form action={updateServiceFee} style={{ display: "grid", gap: "16px", maxWidth: "480px" }}>
           <label style={{ display: "grid", gap: "6px", fontSize: "12px", fontWeight: 600 }}>
             Platform service fee percentage (%)
-            <input
+            <select
               name="service_fee_percent"
-              type="number"
-              step="0.1"
-              min="0"
-              max="50"
               defaultValue={serviceFeePercent}
-              required
               style={{
                 height: "40px",
                 border: "1px solid var(--line)",
@@ -54,16 +49,27 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 fontFamily: "var(--font-geist-mono)",
                 background: "#faf9f8",
               }}
-            />
+            ><option value="5">5%</option><option value="10">10%</option></select>
           </label>
           <p style={{ margin: 0, color: "var(--muted)", fontSize: "11px", lineHeight: 1.5 }}>
-            This fee is dynamically deducted from purohit earnings upon booking settlement. Customers pay the ceremony price (e.g. ₹1,000), and the purohit receives the net amount after this fee (e.g. ₹900 at 10%). Changing this rate immediately applies to all future bookings.
+            The platform fee is added to the priest&apos;s published price on new bookings. For a ₹5,000 pooja at 10%, the customer pays ₹5,500. Existing bookings retain their original total.
           </p>
           <div>
             <button className="primary-button" type="submit">
               <Save size={15} /> Update service fee
             </button>
           </div>
+        </form>
+      </section>
+
+      <section className="panel" style={{ marginBottom: "22px" }}>
+        <div className="panel-heading"><div><p className="eyebrow">Booking method</p><h2>Customer bidding and proposals</h2></div></div>
+        <p style={{ color: "var(--muted)", fontSize: "12px" }}>Fixed price shows each priest&apos;s published rate. Enable bidding only when you want customers to request and compare proposals.</p>
+        <form action={updateBiddingMode} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <select name="bidding_enabled" defaultValue={String(biddingEnabled)} disabled={admin.role !== "super_admin"} aria-label="Customer bidding mode">
+            <option value="false">Fixed price only</option><option value="true">Allow proposals</option>
+          </select>
+          <button className="primary-button" disabled={admin.role !== "super_admin"}>Save booking method</button>
         </form>
       </section>
 
